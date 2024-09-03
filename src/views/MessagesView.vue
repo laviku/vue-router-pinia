@@ -2,33 +2,27 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MessageItem from '@/components/MessageItem.vue'
+import useMessagesStore from '@/stores/messages.js';
+import useContactsStore from '@/stores/contacts.js';
+import useChannelStore from '@/stores/channels.js'
 
 const route = useRoute()
+const messagesStore = useMessagesStore();
+const contactsStore = useContactsStore();
+const channelsStore = useChannelStore();
 
 const end = ref(null)
 const channelId = ref(null)
 const title = ref('')
 const people = reactive([
-  { id: 1, name: 'Tú', avatar: '/avatars/avatar.jpg' },
+  { id: 1, name: 'Tú', avatar: '/avatars/LM-avatar.png' },
   { id: 2, name: 'Jason', avatar: '/avatars/avatar-02.jpg' },
   { id: 3, name: 'Janet', avatar: '/avatars/avatar-03.jpg' }
 ])
-const messages = reactive([
-  { id: 1, author: 1, message: 'Hola 👀', timestamp: new Date().toLocaleTimeString() },
-  { id: 2, author: 2, message: 'Holaaa!!!', timestamp: new Date().toLocaleTimeString() },
-  { id: 3, author: 3, message: 'Hola a todo el mundo 😊', timestamp: new Date().toLocaleTimeString() },
-  { id: 4, author: 3, message: '¿Cómo están?', timestamp: new Date().toLocaleTimeString() },
-  { id: 5, author: 1, message: 'Todo muy bien :D', timestamp: new Date().toLocaleTimeString() },
-  { id: 6, author: 2, message: 'Si, todo bien.', timestamp: new Date().toLocaleTimeString() },
-  { id: 7, author: 1, message: 'Oigan, les escribo para contarles algo... 😌', timestamp: new Date().toLocaleTimeString() },
-  { id: 8, author: 3, message: 'A vers 👀', timestamp: new Date().toLocaleTimeString() },
-  { id: 9, author: 2, message: 'Ahhhh!!', timestamp: new Date().toLocaleTimeString() },
-  { id: 10, author: 2, message: '¡Cuenta ese chismesito yaaaa!', timestamp: new Date().toLocaleTimeString() },
-  { id: 11, author: 1, message: 'Pues, ¡acabamos de lanzar los nuevos cursos de Vue.js!', timestamp: new Date().toLocaleTimeString() },
-])
 
-const messagesView = computed(() => messages.map((message) => {
-  const author = people.find((p) => p.id === message.author)
+const messagesView = computed(() => messagesStore.findMessagesByChannelId(channelId.value).map((message) => {
+  const author = contactsStore.getContactById(message.author);
+  
   if (!author) return message;
     return {
     ...message,
@@ -46,7 +40,7 @@ const scrollToBottom = () => {
 watch(
   () => route.params.id,
   (id) => {
-    channelId.value = id
+    channelId.value = Number(id);
     scrollToBottom()
   },
   { immediate: true }
@@ -58,11 +52,11 @@ scrollToBottom()
 <template>
   <div class="messages">
     <header>
-      <h2>{{ title }}</h2>
+      <h2>{{ channelsStore.getChannelTitle(channelId) }}</h2>
       <div class="people-list">
         <div
           class="people-item"
-          v-for="p in people"
+          v-for="p in contactsStore.contacts"
           :key="p.id"
         >
           <img :src="p.avatar" :alt="p.name" />
