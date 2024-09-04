@@ -14,11 +14,8 @@ const channelsStore = useChannelStore();
 const end = ref(null)
 const channelId = ref(null)
 const title = ref('')
-const people = reactive([
-  { id: 1, name: 'Tú', avatar: '/avatars/LM-avatar.png' },
-  { id: 2, name: 'Jason', avatar: '/avatars/avatar-02.jpg' },
-  { id: 3, name: 'Janet', avatar: '/avatars/avatar-03.jpg' }
-])
+const people = reactive([])
+const message = ref('')
 
 const messagesView = computed(() => messagesStore.findMessagesByChannelId(channelId.value).map((message) => {
   const author = contactsStore.getContactById(message.author);
@@ -30,6 +27,11 @@ const messagesView = computed(() => messagesStore.findMessagesByChannelId(channe
     self: author.id === 1
   }
 }))
+
+const addMessage = () => {
+  messagesStore.addMessage(channelId.value, message.value);
+  message.value = '';
+}
 
 const scrollToBottom = () => {
   end.value?.scrollIntoView({
@@ -75,12 +77,12 @@ scrollToBottom()
       />
       <span ref="end"></span>
     </div>
-    <footer>
-      <textarea rows="3"></textarea>
+    <form class="footer" @submit.prevent="addMessage">
+      <textarea rows="3" v-model="message"></textarea>
       <button>
         <Icon icon="carbon:send-alt" />
       </button>
-    </footer>
+    </form>
   </div>
 </template>
 
@@ -105,7 +107,7 @@ scrollToBottom()
   .content {
     @apply flex flex-col gap-4 p-4 h-full overflow-y-auto;
   }
-  footer {
+  .footer {
     @apply flex p-2;
     textarea {
       @apply w-full px-2 py-2 resize-none bg-zinc-800 rounded-tl-md rounded-bl-md focus:outline-none;
